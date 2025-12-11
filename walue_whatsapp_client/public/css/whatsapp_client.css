@@ -1,0 +1,189 @@
+/**
+ * Walue WhatsApp Client Styles
+ */
+
+/* WhatsApp Call Widget */
+.whatsapp-call-widget {
+    padding: 20px;
+}
+
+.whatsapp-call-widget .call-avatar {
+    margin-bottom: 15px;
+}
+
+.whatsapp-call-widget .call-timer h3 {
+    font-family: monospace;
+    font-size: 2rem;
+    color: #25D366;
+}
+
+.whatsapp-call-widget .call-status .badge {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+}
+
+/* Message Status Indicators */
+.whatsapp-message-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.whatsapp-message-status .checkmark {
+    color: #34B7F1;
+}
+
+.whatsapp-message-status .checkmark.single::after {
+    content: '✓';
+}
+
+.whatsapp-message-status .checkmark.double::after {
+    content: '✓✓';
+}
+
+.whatsapp-message-status .checkmark.read {
+    color: #34B7F1;
+}
+
+/* WhatsApp Green Theme */
+.btn-whatsapp {
+    background-color: #25D366;
+    border-color: #25D366;
+    color: white;
+}
+
+.btn-whatsapp:hover {
+    background-color: #128C7E;
+    border-color: #128C7E;
+    color: white;
+}
+
+/* Call Permission Badge on Lead */
+.permission-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.permission-status-badge.granted {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.permission-status-badge.requested {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.permission-status-badge.expired {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Message Composer Dialog */
+.message-composer-preview {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+}
+
+.message-composer-preview .template-preview {
+    background-color: white;
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 4px solid #25D366;
+}
+
+/* WhatsApp History Timeline */
+.whatsapp-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.whatsapp-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e0e0e0;
+}
+
+.whatsapp-timeline-item {
+    position: relative;
+    padding: 10px 0;
+}
+
+.whatsapp-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 15px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #25D366;
+}
+
+.whatsapp-timeline-item.call::before {
+    background-color: #34B7F1;
+}
+
+.whatsapp-timeline-item.failed::before {
+    background-color: #dc3545;
+}
+
+/* Conversation Window Indicator */
+.conversation-window-indicator {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
+.conversation-window-indicator.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.conversation-window-indicator.inactive {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Settings Page */
+.whatsapp-settings-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.whatsapp-settings-card h5 {
+    color: #128C7E;
+    margin-bottom: 15px;
+}
+
+.whatsapp-settings-card .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.whatsapp-settings-card .status-indicator .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.whatsapp-settings-card .status-indicator .dot.connected {
+    background-color: #28a745;
+}
+
+.whatsapp-settings-card .status-indicator .dot.disconnected {
+    background-color: #dc3545;
+}

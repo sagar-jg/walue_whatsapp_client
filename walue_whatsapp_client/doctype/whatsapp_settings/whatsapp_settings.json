@@ -1,0 +1,191 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "creation": "2025-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "provider_section",
+        "provider_url",
+        "provider_oauth_client_id",
+        "provider_oauth_client_secret",
+        "column_break_provider",
+        "provider_access_token",
+        "provider_refresh_token",
+        "provider_connection_status",
+        "waba_section",
+        "meta_waba_id",
+        "meta_phone_number_id",
+        "meta_phone_number",
+        "column_break_waba",
+        "meta_business_id",
+        "meta_access_token",
+        "features_section",
+        "calling_enabled",
+        "messaging_enabled",
+        "call_recording_enabled",
+        "column_break_features",
+        "call_permission_template",
+        "sync_section",
+        "last_sync"
+    ],
+    "fields": [
+        {
+            "fieldname": "provider_section",
+            "fieldtype": "Section Break",
+            "label": "Provider Connection"
+        },
+        {
+            "fieldname": "provider_url",
+            "fieldtype": "Data",
+            "label": "Provider URL",
+            "reqd": 1,
+            "description": "Walue Biz platform URL (e.g., https://walue.biz)"
+        },
+        {
+            "fieldname": "provider_oauth_client_id",
+            "fieldtype": "Data",
+            "label": "OAuth Client ID",
+            "description": "Provided by Walue Biz during registration"
+        },
+        {
+            "fieldname": "provider_oauth_client_secret",
+            "fieldtype": "Password",
+            "label": "OAuth Client Secret",
+            "description": "Provided by Walue Biz (encrypted)"
+        },
+        {
+            "fieldname": "column_break_provider",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "provider_access_token",
+            "fieldtype": "Password",
+            "label": "Access Token",
+            "read_only": 1,
+            "description": "Auto-managed OAuth access token"
+        },
+        {
+            "fieldname": "provider_refresh_token",
+            "fieldtype": "Password",
+            "label": "Refresh Token",
+            "read_only": 1,
+            "description": "Auto-managed OAuth refresh token"
+        },
+        {
+            "fieldname": "provider_connection_status",
+            "fieldtype": "HTML",
+            "label": "Connection Status",
+            "options": "<div id='provider-connection-status'></div>"
+        },
+        {
+            "fieldname": "waba_section",
+            "fieldtype": "Section Break",
+            "label": "WhatsApp Business Account"
+        },
+        {
+            "fieldname": "meta_waba_id",
+            "fieldtype": "Data",
+            "label": "WABA ID",
+            "description": "Your WhatsApp Business Account ID"
+        },
+        {
+            "fieldname": "meta_phone_number_id",
+            "fieldtype": "Data",
+            "label": "Phone Number ID",
+            "description": "Your registered WhatsApp phone number ID"
+        },
+        {
+            "fieldname": "meta_phone_number",
+            "fieldtype": "Data",
+            "label": "Phone Number",
+            "description": "Your WhatsApp business phone number"
+        },
+        {
+            "fieldname": "column_break_waba",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "meta_business_id",
+            "fieldtype": "Data",
+            "label": "Meta Business ID",
+            "description": "Your Meta Business Portfolio ID"
+        },
+        {
+            "fieldname": "meta_access_token",
+            "fieldtype": "Password",
+            "label": "Meta Access Token",
+            "description": "System user access token from Meta (encrypted)"
+        },
+        {
+            "fieldname": "features_section",
+            "fieldtype": "Section Break",
+            "label": "Features"
+        },
+        {
+            "fieldname": "calling_enabled",
+            "fieldtype": "Check",
+            "label": "Calling Enabled",
+            "default": 1,
+            "description": "Enable WhatsApp calling from CRM"
+        },
+        {
+            "fieldname": "messaging_enabled",
+            "fieldtype": "Check",
+            "label": "Messaging Enabled",
+            "default": 1,
+            "description": "Enable WhatsApp messaging from CRM"
+        },
+        {
+            "fieldname": "call_recording_enabled",
+            "fieldtype": "Check",
+            "label": "Call Recording Enabled",
+            "default": 0,
+            "description": "Enable call recording (if supported)"
+        },
+        {
+            "fieldname": "column_break_features",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "call_permission_template",
+            "fieldtype": "Data",
+            "label": "Call Permission Template",
+            "description": "Template name for call permission requests"
+        },
+        {
+            "fieldname": "sync_section",
+            "fieldtype": "Section Break",
+            "label": "Sync"
+        },
+        {
+            "fieldname": "last_sync",
+            "fieldtype": "Datetime",
+            "label": "Last Sync",
+            "read_only": 1,
+            "description": "Last template/data sync timestamp"
+        }
+    ],
+    "issingle": 1,
+    "links": [],
+    "modified": "2025-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Walue Whatsapp Client",
+    "name": "WhatsApp Settings",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "track_changes": 1
+}

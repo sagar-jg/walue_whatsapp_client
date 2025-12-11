@@ -1,0 +1,199 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "naming_series:",
+    "creation": "2025-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "naming_series",
+        "lead",
+        "call_session_id",
+        "direction",
+        "status",
+        "column_break_1",
+        "to_number",
+        "from_number",
+        "cost",
+        "timing_section",
+        "started_at",
+        "ended_at",
+        "column_break_timing",
+        "duration_seconds",
+        "recording_section",
+        "recorded",
+        "recording_url",
+        "notes_section",
+        "notes",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "fieldname": "naming_series",
+            "fieldtype": "Select",
+            "label": "Series",
+            "options": "CALL-.YYYY.-",
+            "default": "CALL-.YYYY.-",
+            "hidden": 1
+        },
+        {
+            "fieldname": "lead",
+            "fieldtype": "Link",
+            "label": "Lead",
+            "options": "CRM Lead",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "call_session_id",
+            "fieldtype": "Data",
+            "label": "Call Session ID",
+            "read_only": 1,
+            "description": "Session ID from provider/Janus"
+        },
+        {
+            "fieldname": "direction",
+            "fieldtype": "Select",
+            "label": "Direction",
+            "options": "outbound\ninbound",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "initiating\nringing\nconnected\nended\nfailed\nno_answer\nmissed",
+            "default": "initiating",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "to_number",
+            "fieldtype": "Data",
+            "label": "To",
+            "reqd": 1
+        },
+        {
+            "fieldname": "from_number",
+            "fieldtype": "Data",
+            "label": "From",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cost",
+            "fieldtype": "Currency",
+            "label": "Cost",
+            "default": 0,
+            "read_only": 1,
+            "description": "Call cost from provider"
+        },
+        {
+            "fieldname": "timing_section",
+            "fieldtype": "Section Break",
+            "label": "Timing"
+        },
+        {
+            "fieldname": "started_at",
+            "fieldtype": "Datetime",
+            "label": "Started At",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "ended_at",
+            "fieldtype": "Datetime",
+            "label": "Ended At"
+        },
+        {
+            "fieldname": "column_break_timing",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "duration_seconds",
+            "fieldtype": "Int",
+            "label": "Duration (seconds)",
+            "default": 0,
+            "read_only": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "recording_section",
+            "fieldtype": "Section Break",
+            "label": "Recording",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "recorded",
+            "fieldtype": "Check",
+            "label": "Recorded",
+            "default": 0
+        },
+        {
+            "fieldname": "recording_url",
+            "fieldtype": "Data",
+            "label": "Recording URL",
+            "depends_on": "eval:doc.recorded"
+        },
+        {
+            "fieldname": "notes_section",
+            "fieldtype": "Section Break",
+            "label": "Notes"
+        },
+        {
+            "fieldname": "notes",
+            "fieldtype": "Text",
+            "label": "Call Notes"
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "options": "WhatsApp Call Log",
+            "hidden": 1
+        }
+    ],
+    "links": [],
+    "modified": "2025-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Walue Whatsapp Client",
+    "name": "WhatsApp Call Log",
+    "naming_rule": "By \"Naming Series\" field",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "search_fields": "lead,to_number",
+    "sort_field": "started_at",
+    "sort_order": "DESC",
+    "title_field": "lead",
+    "track_changes": 1
+}

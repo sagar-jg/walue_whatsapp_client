@@ -1,0 +1,214 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "naming_series:",
+    "creation": "2025-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "naming_series",
+        "lead",
+        "message_id",
+        "direction",
+        "status",
+        "column_break_1",
+        "message_type",
+        "template_name",
+        "cost",
+        "contact_section",
+        "to_number",
+        "from_number",
+        "content_section",
+        "message_content",
+        "media_url",
+        "error_message",
+        "timestamps_section",
+        "sent_at",
+        "delivered_at",
+        "column_break_timestamps",
+        "read_at",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "fieldname": "naming_series",
+            "fieldtype": "Select",
+            "label": "Series",
+            "options": "MSG-.YYYY.-",
+            "default": "MSG-.YYYY.-",
+            "hidden": 1
+        },
+        {
+            "fieldname": "lead",
+            "fieldtype": "Link",
+            "label": "Lead",
+            "options": "CRM Lead",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "message_id",
+            "fieldtype": "Data",
+            "label": "Message ID",
+            "read_only": 1,
+            "description": "WhatsApp message ID from Meta"
+        },
+        {
+            "fieldname": "direction",
+            "fieldtype": "Select",
+            "label": "Direction",
+            "options": "outbound\ninbound",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "queued\nsent\ndelivered\nread\nfailed",
+            "default": "queued",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "message_type",
+            "fieldtype": "Select",
+            "label": "Message Type",
+            "options": "template\ntext\nmedia",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "template_name",
+            "fieldtype": "Data",
+            "label": "Template Name",
+            "depends_on": "eval:doc.message_type=='template'"
+        },
+        {
+            "fieldname": "cost",
+            "fieldtype": "Currency",
+            "label": "Cost",
+            "default": 0,
+            "read_only": 1,
+            "description": "Message cost from provider"
+        },
+        {
+            "fieldname": "contact_section",
+            "fieldtype": "Section Break",
+            "label": "Contact"
+        },
+        {
+            "fieldname": "to_number",
+            "fieldtype": "Data",
+            "label": "To",
+            "reqd": 1
+        },
+        {
+            "fieldname": "from_number",
+            "fieldtype": "Data",
+            "label": "From",
+            "reqd": 1
+        },
+        {
+            "fieldname": "content_section",
+            "fieldtype": "Section Break",
+            "label": "Content"
+        },
+        {
+            "fieldname": "message_content",
+            "fieldtype": "Text",
+            "label": "Message Content",
+            "description": "Actual message text (stored locally only)"
+        },
+        {
+            "fieldname": "media_url",
+            "fieldtype": "Data",
+            "label": "Media URL",
+            "depends_on": "eval:doc.message_type=='media'"
+        },
+        {
+            "fieldname": "error_message",
+            "fieldtype": "Text",
+            "label": "Error Message",
+            "depends_on": "eval:doc.status=='failed'",
+            "read_only": 1
+        },
+        {
+            "fieldname": "timestamps_section",
+            "fieldtype": "Section Break",
+            "label": "Timestamps"
+        },
+        {
+            "fieldname": "sent_at",
+            "fieldtype": "Datetime",
+            "label": "Sent At",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "delivered_at",
+            "fieldtype": "Datetime",
+            "label": "Delivered At"
+        },
+        {
+            "fieldname": "column_break_timestamps",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "read_at",
+            "fieldtype": "Datetime",
+            "label": "Read At"
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "options": "WhatsApp Message Log",
+            "hidden": 1
+        }
+    ],
+    "links": [],
+    "modified": "2025-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Walue Whatsapp Client",
+    "name": "WhatsApp Message Log",
+    "naming_rule": "By \"Naming Series\" field",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "search_fields": "lead,to_number,message_content",
+    "sort_field": "sent_at",
+    "sort_order": "DESC",
+    "title_field": "lead",
+    "track_changes": 1
+}

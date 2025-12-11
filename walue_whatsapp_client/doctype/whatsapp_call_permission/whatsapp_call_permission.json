@@ -1,0 +1,148 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "hash",
+    "creation": "2025-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "lead",
+        "phone_number",
+        "permission_status",
+        "column_break_1",
+        "granted_at",
+        "expires_at",
+        "limits_section",
+        "last_request_sent_at",
+        "request_count_24h",
+        "request_count_7d",
+        "column_break_limits",
+        "last_call_at",
+        "calls_made_count"
+    ],
+    "fields": [
+        {
+            "fieldname": "lead",
+            "fieldtype": "Link",
+            "label": "Lead",
+            "options": "CRM Lead",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "phone_number",
+            "fieldtype": "Data",
+            "label": "Phone Number",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "permission_status",
+            "fieldtype": "Select",
+            "label": "Permission Status",
+            "options": "none\nrequested\ngranted\nexpired\nrevoked",
+            "default": "none",
+            "reqd": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "granted_at",
+            "fieldtype": "Datetime",
+            "label": "Granted At",
+            "depends_on": "eval:doc.permission_status=='granted'"
+        },
+        {
+            "fieldname": "expires_at",
+            "fieldtype": "Datetime",
+            "label": "Expires At",
+            "depends_on": "eval:doc.permission_status=='granted'",
+            "description": "Permission expires 7 days after grant"
+        },
+        {
+            "fieldname": "limits_section",
+            "fieldtype": "Section Break",
+            "label": "Rate Limits"
+        },
+        {
+            "fieldname": "last_request_sent_at",
+            "fieldtype": "Datetime",
+            "label": "Last Request Sent",
+            "read_only": 1
+        },
+        {
+            "fieldname": "request_count_24h",
+            "fieldtype": "Int",
+            "label": "Requests (24h)",
+            "default": 0,
+            "read_only": 1,
+            "description": "Permission requests in last 24 hours (max 1)"
+        },
+        {
+            "fieldname": "request_count_7d",
+            "fieldtype": "Int",
+            "label": "Requests (7 days)",
+            "default": 0,
+            "read_only": 1,
+            "description": "Permission requests in last 7 days (max 2)"
+        },
+        {
+            "fieldname": "column_break_limits",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "last_call_at",
+            "fieldtype": "Datetime",
+            "label": "Last Call At",
+            "read_only": 1
+        },
+        {
+            "fieldname": "calls_made_count",
+            "fieldtype": "Int",
+            "label": "Calls Made (24h)",
+            "default": 0,
+            "read_only": 1,
+            "description": "Calls made in last 24 hours (max 5 per permission)"
+        }
+    ],
+    "links": [
+        {
+            "link_doctype": "WhatsApp Call Log",
+            "link_fieldname": "lead"
+        }
+    ],
+    "modified": "2025-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Walue Whatsapp Client",
+    "name": "WhatsApp Call Permission",
+    "naming_rule": "Random",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "read": 1,
+            "role": "Sales User",
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "title_field": "lead",
+    "track_changes": 1
+}

@@ -1,0 +1,100 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "field:template_name",
+    "creation": "2025-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "template_name",
+        "category",
+        "language",
+        "status",
+        "column_break_1",
+        "last_synced",
+        "components_section",
+        "components"
+    ],
+    "fields": [
+        {
+            "fieldname": "template_name",
+            "fieldtype": "Data",
+            "label": "Template Name",
+            "reqd": 1,
+            "unique": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "category",
+            "fieldtype": "Select",
+            "label": "Category",
+            "options": "marketing\nutility\nauthentication\nservice",
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "language",
+            "fieldtype": "Data",
+            "label": "Language",
+            "description": "Language code (e.g., en_US, hi, es)"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "approved\npending\nrejected",
+            "default": "pending",
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "last_synced",
+            "fieldtype": "Datetime",
+            "label": "Last Synced",
+            "read_only": 1
+        },
+        {
+            "fieldname": "components_section",
+            "fieldtype": "Section Break",
+            "label": "Template Components"
+        },
+        {
+            "fieldname": "components",
+            "fieldtype": "JSON",
+            "label": "Components",
+            "description": "Template structure from Meta (header, body, footer, buttons)"
+        }
+    ],
+    "links": [],
+    "modified": "2025-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Walue Whatsapp Client",
+    "name": "WhatsApp Template",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "read": 1,
+            "role": "Sales User"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "track_changes": 0
+}

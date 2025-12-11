@@ -89,6 +89,111 @@ def get_templates() -> list:
 
 
 @frappe.whitelist()
+def sync_templates() -> dict:
+    """
+    Sync message templates from Meta WhatsApp Business API to local cache
+
+    Fetches all templates from Meta and upserts them into WhatsApp Template DocType
+
+    Returns:
+        dict: Sync result with count of synced templates
+    """
+    settings = frappe.get_single("WhatsApp Settings")
+
+    if not settings.meta_waba_id or not settings.meta_access_token:
+        return {
+            "success": False,
+            "error": "WABA ID and Access Token are required. Please configure WhatsApp Settings."
+        }
+
+    waba_id = settings.meta_waba_id
+    access_token = settings.get_password("meta_access_token")
+
+    # Fetch templates from Meta API
+    url = f"https://graph.facebook.com/v21.0/{waba_id}/message_templates"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response_data = response.json()
+
+        if "error" in response_data:
+            return {
+                "success": False,
+                "error": response_data["error"].get("message", "Failed to fetch templates")
+            }
+
+        templates = response_data.get("data", [])
+        synced_count = 0
+
+        for template in templates:
+            template_name = template.get("name")
+            status = template.get("status", "").lower()
+
+            # Map Meta status to our status
+            status_map = {
+                "approved": "approved",
+                "pending": "pending",
+                "rejected": "rejected",
+                "in_appeal": "pending",
+                "pending_deletion": "rejected",
+                "deleted": "rejected",
+                "disabled": "rejected",
+                "paused": "pending",
+                "limit_exceeded": "pending"
+            }
+            local_status = status_map.get(status, "pending")
+
+            # Check if template exists
+            existing = frappe.db.exists("WhatsApp Template", template_name)
+
+            if existing:
+                # Update existing template
+                doc = frappe.get_doc("WhatsApp Template", template_name)
+                doc.category = template.get("category", "").lower()
+                doc.language = template.get("language", "en_US")
+                doc.status = local_status
+                doc.components = frappe.as_json(template.get("components", []))
+                doc.last_synced = datetime.now()
+                doc.save(ignore_permissions=True)
+            else:
+                # Create new template
+                doc = frappe.get_doc({
+                    "doctype": "WhatsApp Template",
+                    "template_name": template_name,
+                    "category": template.get("category", "").lower(),
+                    "language": template.get("language", "en_US"),
+                    "status": local_status,
+                    "components": frappe.as_json(template.get("components", [])),
+                    "last_synced": datetime.now()
+                })
+                doc.insert(ignore_permissions=True)
+
+            synced_count += 1
+
+        frappe.db.commit()
+
+        # Update last sync time in settings
+        settings.last_sync = datetime.now()
+        settings.save(ignore_permissions=True)
+
+        return {
+            "success": True,
+            "synced_count": synced_count,
+            "message": f"Successfully synced {synced_count} templates"
+        }
+
+    except requests.RequestException as e:
+        frappe.log_error(f"Template sync failed: {str(e)}")
+        return {
+            "success": False,
+            "error": f"API request failed: {str(e)}"
+        }
+
+
+@frappe.whitelist()
 def send_template(lead_id: str, template_name: str, template_language: str = "en_US",
                   template_variables: dict = None) -> dict:
     """

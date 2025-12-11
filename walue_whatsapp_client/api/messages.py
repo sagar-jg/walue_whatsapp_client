@@ -47,7 +47,8 @@ def _validate_phone(phone: str) -> bool:
 def _get_settings():
     """Get WhatsApp Settings with validation"""
     settings = frappe.get_single("WhatsApp Settings")
-    if not settings.provider_access_token:
+    # Check for Meta API credentials (required for direct API access)
+    if not settings.meta_access_token or not settings.meta_phone_number_id:
         frappe.throw(_(ERR_NOT_CONFIGURED))
     return settings
 

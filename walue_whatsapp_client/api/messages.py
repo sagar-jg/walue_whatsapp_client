@@ -74,18 +74,65 @@ def _is_in_conversation_window(lead_id: str) -> bool:
 
 
 @frappe.whitelist()
-def get_templates() -> list:
+def get_templates(use_cache: bool = False) -> dict:
     """
-    Get available message templates from local cache
+    Get available message templates
+
+    Args:
+        use_cache: If True, read from local cache. If False (default), fetch from Meta API.
 
     Returns:
-        list: Approved templates
+        dict: Templates list with success status
     """
-    return frappe.get_all(
-        "WhatsApp Template",
-        filters={"status": "approved"},
-        fields=["template_name", "category", "language", "components"]
-    )
+    if use_cache:
+        # Read from local cache
+        templates = frappe.get_all(
+            "WhatsApp Template",
+            filters={"status": "approved"},
+            fields=["template_name", "category", "language", "components"]
+        )
+        return {"success": True, "templates": templates, "source": "cache"}
+
+    # Fetch directly from Meta API
+    settings = frappe.get_single("WhatsApp Settings")
+
+    if not settings.meta_waba_id or not settings.meta_access_token:
+        return {
+            "success": False,
+            "error": "WABA ID and Access Token are required. Please configure WhatsApp Settings."
+        }
+
+    waba_id = settings.meta_waba_id
+    access_token = settings.get_password("meta_access_token")
+
+    url = f"https://graph.facebook.com/v21.0/{waba_id}/message_templates"
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    try:
+        response = requests.get(url, headers=headers)
+        response_data = response.json()
+
+        if "error" in response_data:
+            return {
+                "success": False,
+                "error": response_data["error"].get("message", "Failed to fetch templates")
+            }
+
+        templates = []
+        for t in response_data.get("data", []):
+            if t.get("status", "").upper() == "APPROVED":
+                templates.append({
+                    "template_name": t.get("name"),
+                    "category": t.get("category", "").lower(),
+                    "language": t.get("language", "en_US"),
+                    "components": t.get("components", [])
+                })
+
+        return {"success": True, "templates": templates, "source": "meta_api"}
+
+    except requests.RequestException as e:
+        frappe.log_error(f"Failed to fetch templates: {str(e)}")
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()

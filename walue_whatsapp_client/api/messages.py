@@ -74,65 +74,32 @@ def _is_in_conversation_window(lead_id: str) -> bool:
 
 
 @frappe.whitelist()
-def get_templates(use_cache: bool = False) -> dict:
+def get_templates() -> dict:
     """
-    Get available message templates
+    Get available message templates from local cache
 
-    Args:
-        use_cache: If True, read from local cache. If False (default), fetch from Meta API.
+    Returns templates from local cache. Use sync_templates() to refresh from Meta API.
 
     Returns:
         dict: Templates list with success status
     """
-    if use_cache:
-        # Read from local cache
-        templates = frappe.get_all(
-            "WhatsApp Template",
-            filters={"status": "approved"},
-            fields=["template_name", "category", "language", "components"]
-        )
-        return {"success": True, "templates": templates, "source": "cache"}
+    templates = frappe.get_all(
+        "WhatsApp Template",
+        filters={"status": "approved"},
+        fields=["template_name", "category", "language", "components"]
+    )
 
-    # Fetch directly from Meta API
-    settings = frappe.get_single("WhatsApp Settings")
+    # If cache is empty, auto-sync first time
+    if not templates:
+        sync_result = sync_templates()
+        if sync_result.get("success"):
+            templates = frappe.get_all(
+                "WhatsApp Template",
+                filters={"status": "approved"},
+                fields=["template_name", "category", "language", "components"]
+            )
 
-    if not settings.meta_waba_id or not settings.meta_access_token:
-        return {
-            "success": False,
-            "error": "WABA ID and Access Token are required. Please configure WhatsApp Settings."
-        }
-
-    waba_id = settings.meta_waba_id
-    access_token = settings.get_password("meta_access_token")
-
-    url = f"https://graph.facebook.com/v21.0/{waba_id}/message_templates"
-    headers = {"Authorization": f"Bearer {access_token}"}
-
-    try:
-        response = requests.get(url, headers=headers)
-        response_data = response.json()
-
-        if "error" in response_data:
-            return {
-                "success": False,
-                "error": response_data["error"].get("message", "Failed to fetch templates")
-            }
-
-        templates = []
-        for t in response_data.get("data", []):
-            if t.get("status", "").upper() == "APPROVED":
-                templates.append({
-                    "template_name": t.get("name"),
-                    "category": t.get("category", "").lower(),
-                    "language": t.get("language", "en_US"),
-                    "components": t.get("components", [])
-                })
-
-        return {"success": True, "templates": templates, "source": "meta_api"}
-
-    except requests.RequestException as e:
-        frappe.log_error(f"Failed to fetch templates: {str(e)}")
-        return {"success": False, "error": str(e)}
+    return {"success": True, "templates": templates}
 
 
 @frappe.whitelist()
@@ -261,18 +228,10 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
     if not phone or not _validate_phone(phone):
         return {"success": False, "error": ERR_INVALID_PHONE}
 
-    # Verify template exists locally
-    template = frappe.db.get_value(
-        "WhatsApp Template",
-        {"template_name": template_name, "status": "approved"},
-        ["template_name", "components"],
-        as_dict=True
-    )
-
-    if not template:
-        return {"success": False, "error": ERR_TEMPLATE_NOT_FOUND}
-
     settings = _get_settings()
+
+    if not settings.meta_phone_number_id or not settings.meta_access_token:
+        return {"success": False, "error": "Phone Number ID and Access Token are required in WhatsApp Settings"}
 
     # Create local message log
     message_log = frappe.get_doc({
@@ -302,27 +261,43 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
                 "parameters": body_params
             })
 
+    # Build Meta API payload
+    payload = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": phone,
+        "type": "template",
+        "template": {
+            "name": template_name,
+            "language": {"code": template_language}
+        }
+    }
+
+    if components:
+        payload["template"]["components"] = components
+
     try:
-        # Send via provider
+        # Send directly to Meta API
+        phone_number_id = settings.meta_phone_number_id
+        access_token = settings.get_password("meta_access_token")
+
         response = requests.post(
-            f"{settings.provider_url}/api/method/walue_whatsapp_provider.api.messages.send_template",
-            headers=get_provider_headers(),
-            json={
-                "phone_number_id": settings.meta_phone_number_id,
-                "access_token": settings.get_password("meta_access_token"),
-                "to": phone,
-                "template_name": template_name,
-                "template_language": template_language,
-                "template_components": components,
-            }
+            f"https://graph.facebook.com/v21.0/{phone_number_id}/messages",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json=payload
         )
 
         result = response.json()
 
-        if result.get("success"):
-            message_log.message_id = result.get("message_id")
+        # Meta API returns: {"messages": [{"id": "wamid.xxx"}]} on success
+        # or {"error": {"message": "..."}} on failure
+        if "messages" in result and result["messages"]:
+            message_id = result["messages"][0].get("id")
+            message_log.message_id = message_id
             message_log.status = MESSAGE_STATUS_SENT
-            message_log.cost = result.get("cost", 0)
             message_log.save(ignore_permissions=True)
 
             # Update lead
@@ -330,17 +305,21 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
             lead.total_whatsapp_messages = (lead.total_whatsapp_messages or 0) + 1
             lead.save(ignore_permissions=True)
 
+            frappe.db.commit()
+
             return {
                 "success": True,
-                "message_id": result.get("message_id"),
+                "message_id": message_id,
                 "message_log_id": message_log.name,
                 "message": MSG_MESSAGE_SENT,
             }
         else:
+            error_msg = result.get("error", {}).get("message", ERR_MESSAGE_FAILED)
             message_log.status = MESSAGE_STATUS_FAILED
-            message_log.error_message = result.get("error")
+            message_log.error_message = error_msg
             message_log.save(ignore_permissions=True)
-            return {"success": False, "error": result.get("error", ERR_MESSAGE_FAILED)}
+            frappe.db.commit()
+            return {"success": False, "error": error_msg}
 
     except requests.RequestException as e:
         message_log.status = MESSAGE_STATUS_FAILED

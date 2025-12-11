@@ -280,9 +280,18 @@ function create_message_dialog(frm, window_status) {
                     }
                 },
                 {
+                    fieldtype: 'HTML',
+                    fieldname: 'template_header',
+                    options: `<div class="template-header d-flex align-items-center justify-content-between mb-2">
+                        <label class="control-label">${__('Template')}</label>
+                        <button type="button" class="btn btn-xs btn-default sync-templates-btn" title="${__('Sync Templates')}">
+                            <i class="fa fa-refresh"></i>
+                        </button>
+                    </div>`
+                },
+                {
                     fieldtype: 'Select',
                     fieldname: 'template_name',
-                    label: __('Template'),
                     options: templates.map(t => t.template_name).join('\n'),
                 },
                 {
@@ -313,6 +322,49 @@ function create_message_dialog(frm, window_status) {
             });
 
             dialog.show();
+
+            // Add sync button click handler
+            dialog.$wrapper.find('.sync-templates-btn').on('click', function() {
+                const $btn = $(this);
+                const $icon = $btn.find('i');
+
+                // Add spinning animation
+                $icon.addClass('fa-spin');
+                $btn.prop('disabled', true);
+
+                frappe.call({
+                    method: 'walue_whatsapp_client.api.messages.sync_templates',
+                    callback: function(r) {
+                        $icon.removeClass('fa-spin');
+                        $btn.prop('disabled', false);
+
+                        if (r.message && r.message.success) {
+                            frappe.show_alert({
+                                message: __('Synced {0} templates', [r.message.synced_count]),
+                                indicator: 'green'
+                            });
+
+                            // Refresh template options
+                            frappe.call({
+                                method: 'walue_whatsapp_client.api.messages.get_templates',
+                                callback: function(r2) {
+                                    let newTemplates = [];
+                                    if (r2.message && r2.message.templates) {
+                                        newTemplates = r2.message.templates;
+                                    }
+                                    const options = newTemplates.map(t => t.template_name).join('\n');
+                                    dialog.set_df_property('template_name', 'options', options);
+                                }
+                            });
+                        } else {
+                            frappe.show_alert({
+                                message: r.message ? r.message.error : __('Sync failed'),
+                                indicator: 'red'
+                            });
+                        }
+                    }
+                });
+            });
         }
     });
 }

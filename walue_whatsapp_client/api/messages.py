@@ -301,10 +301,12 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
             message_log.status = MESSAGE_STATUS_SENT
             message_log.save(ignore_permissions=True)
 
-            # Update lead
-            lead.last_whatsapp_message = datetime.now()
-            lead.total_whatsapp_messages = (lead.total_whatsapp_messages or 0) + 1
-            lead.save(ignore_permissions=True)
+            # Update lead using set_value to avoid timestamp conflicts
+            current_count = frappe.db.get_value("CRM Lead", lead_id, "total_whatsapp_messages") or 0
+            frappe.db.set_value("CRM Lead", lead_id, {
+                "last_whatsapp_message": datetime.now(),
+                "total_whatsapp_messages": current_count + 1
+            }, update_modified=False)
 
             frappe.db.commit()
 

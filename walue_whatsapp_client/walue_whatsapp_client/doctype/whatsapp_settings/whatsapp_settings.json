@@ -20,6 +20,10 @@
         "column_break_waba",
         "meta_business_id",
         "meta_access_token",
+        "webhook_section",
+        "webhook_verify_token",
+        "meta_app_secret",
+        "webhook_url_display",
         "features_section",
         "calling_enabled",
         "messaging_enabled",
@@ -116,6 +120,29 @@
             "fieldtype": "Password",
             "label": "Meta Access Token",
             "description": "System user access token from Meta (encrypted)"
+        },
+        {
+            "fieldname": "webhook_section",
+            "fieldtype": "Section Break",
+            "label": "Webhook Configuration"
+        },
+        {
+            "fieldname": "webhook_verify_token",
+            "fieldtype": "Password",
+            "label": "Webhook Verify Token",
+            "description": "Token to verify webhooks from Meta (set same value in Meta Developer Portal)"
+        },
+        {
+            "fieldname": "meta_app_secret",
+            "fieldtype": "Password",
+            "label": "Meta App Secret",
+            "description": "Your Meta App Secret for webhook signature verification (optional for testing)"
+        },
+        {
+            "fieldname": "webhook_url_display",
+            "fieldtype": "HTML",
+            "label": "Webhook URL",
+            "options": "<div class='alert alert-info'><strong>Webhook URL:</strong><br><code>/api/method/walue_whatsapp_client.api.webhooks.meta_webhook</code><br><br>Configure this URL in Meta Developer Portal > WhatsApp > Configuration > Webhook</div>"
         },
         {
             "fieldname": "features_section",

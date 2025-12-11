@@ -254,7 +254,15 @@ function create_message_dialog(frm, window_status) {
     frappe.call({
         method: 'walue_whatsapp_client.api.messages.get_templates',
         callback: function(r) {
-            const templates = r.message || [];
+            // Handle both old format (array) and new format (object with templates)
+            let templates = [];
+            if (r.message) {
+                if (Array.isArray(r.message)) {
+                    templates = r.message;
+                } else if (r.message.success && r.message.templates) {
+                    templates = r.message.templates;
+                }
+            }
 
             const fields = [
                 {

@@ -210,7 +210,7 @@ def sync_templates() -> dict:
 
 @frappe.whitelist()
 def send_template(lead_id: str, template_name: str, template_language: str = "en_US",
-                  template_variables: dict = None) -> dict:
+                  template_variables: dict = None, use_queue: bool = True) -> dict:
     """
     Send a template message to a lead
 
@@ -219,9 +219,10 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
         template_name: Name of the approved template
         template_language: Language code
         template_variables: Variable values for template
+        use_queue: If True (default), send via background queue. If False, send synchronously.
 
     Returns:
-        dict: Message status with message_id
+        dict: Message status with message_log_id
     """
     lead = frappe.get_doc("CRM Lead", lead_id)
     phone = lead.whatsapp_number or lead.mobile_no
@@ -234,7 +235,7 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
     if not settings.meta_phone_number_id or not settings.meta_access_token:
         return {"success": False, "error": "Phone Number ID and Access Token are required in WhatsApp Settings"}
 
-    # Create local message log
+    # Create local message log with QUEUED status
     message_log = frappe.get_doc({
         "doctype": "WhatsApp Message Log",
         "lead": lead_id,
@@ -244,14 +245,53 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
         "message_type": MESSAGE_TYPE_TEMPLATE,
         "template_name": template_name,
         "status": MESSAGE_STATUS_QUEUED,
-        "sent_at": datetime.now(),
     })
     message_log.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    if use_queue:
+        # Enqueue the actual sending as a background job
+        frappe.enqueue(
+            "walue_whatsapp_client.api.messages._send_template_job",
+            queue="short",
+            message_log_id=message_log.name,
+            template_name=template_name,
+            template_language=template_language,
+            template_variables=template_variables,
+            phone=phone,
+            lead_id=lead_id,
+        )
+
+        return {
+            "success": True,
+            "queued": True,
+            "message_log_id": message_log.name,
+            "message": "Message queued for sending",
+        }
+    else:
+        # Send synchronously
+        return _send_template_sync(
+            message_log.name, template_name, template_language,
+            template_variables, phone, lead_id
+        )
+
+
+def _send_template_job(message_log_id: str, template_name: str, template_language: str,
+                       template_variables: dict, phone: str, lead_id: str):
+    """Background job to send template message"""
+    _send_template_sync(message_log_id, template_name, template_language,
+                        template_variables, phone, lead_id)
+
+
+def _send_template_sync(message_log_id: str, template_name: str, template_language: str,
+                        template_variables: dict, phone: str, lead_id: str) -> dict:
+    """Actually send the template message to Meta API"""
+    message_log = frappe.get_doc("WhatsApp Message Log", message_log_id)
+    settings = frappe.get_single("WhatsApp Settings")
 
     # Build template components
     components = []
     if template_variables:
-        # Build body component with variables
         body_params = []
         for key, value in template_variables.items():
             body_params.append({"type": "text", "text": str(value)})
@@ -278,7 +318,6 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
         payload["template"]["components"] = components
 
     try:
-        # Send directly to Meta API
         phone_number_id = settings.meta_phone_number_id
         access_token = settings.get_password("meta_access_token")
 
@@ -293,15 +332,14 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
 
         result = response.json()
 
-        # Meta API returns: {"messages": [{"id": "wamid.xxx"}]} on success
-        # or {"error": {"message": "..."}} on failure
         if "messages" in result and result["messages"]:
             message_id = result["messages"][0].get("id")
             message_log.message_id = message_id
             message_log.status = MESSAGE_STATUS_SENT
+            message_log.sent_at = datetime.now()
             message_log.save(ignore_permissions=True)
 
-            # Update lead using set_value to avoid timestamp conflicts
+            # Update lead
             current_count = frappe.db.get_value("CRM Lead", lead_id, "total_whatsapp_messages") or 0
             frappe.db.set_value("CRM Lead", lead_id, {
                 "last_whatsapp_message": datetime.now(),
@@ -309,6 +347,18 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
             }, update_modified=False)
 
             frappe.db.commit()
+
+            # Notify UI via realtime
+            frappe.publish_realtime(
+                "whatsapp_message_status",
+                {
+                    "message_log_id": message_log.name,
+                    "lead": lead_id,
+                    "status": MESSAGE_STATUS_SENT,
+                    "message_id": message_id,
+                },
+                after_commit=True
+            )
 
             return {
                 "success": True,
@@ -322,6 +372,18 @@ def send_template(lead_id: str, template_name: str, template_language: str = "en
             message_log.error_message = error_msg
             message_log.save(ignore_permissions=True)
             frappe.db.commit()
+
+            frappe.publish_realtime(
+                "whatsapp_message_status",
+                {
+                    "message_log_id": message_log.name,
+                    "lead": lead_id,
+                    "status": MESSAGE_STATUS_FAILED,
+                    "error": error_msg,
+                },
+                after_commit=True
+            )
+
             return {"success": False, "error": error_msg}
 
     except requests.RequestException as e:
